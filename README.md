@@ -7,8 +7,11 @@
 An **admin-only** web application for a small cafe. The admin monitors sales and orders, and manages the menu, loyalty customers, stock, suppliers, staff roster and reports, with interactive charts and popups on every page. Works in light or dark mode, on desktop and mobile.
 
 **Live website:** https://nurdamia123.github.io/Kopi-Kita/
+
 **Subject:** IMS566 Advanced Web Design Development and Content Management
+
 **Programme:** CDIM262, UiTM Puncak Perdana
+
 **Developer:** Nur Damia Izzati Binti Hassan (2025124987)
 
 ---
