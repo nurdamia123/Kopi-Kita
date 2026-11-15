@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Chocolate muffin"><title>Chocolate muffin</title>
+<ellipse cx="60" cy="102" rx="34" ry="6" fill="#ddb892" opacity=".5"/>
+<path d="M32 62h56l-7 36a5 5 0 0 1-5 4H44a5 5 0 0 1-5-4z" fill="#ffffff" stroke="#7a5235" stroke-width="3" stroke-linejoin="round"/>
+<path d="M46 64l2 36M60 64v36M74 64l-2 36" stroke="#7a5235" stroke-width="2" opacity=".35"/>
+<path d="M28 62c-4-14 8-24 18-22 2-12 26-14 30-2 12-2 20 10 16 24z" fill="#7a5235" stroke="#7a5235" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="46" cy="52" r="2.5" fill="#ddb892"/><circle cx="60" cy="45" r="2.5" fill="#ddb892"/><circle cx="72" cy="54" r="2.5" fill="#ddb892"/><circle cx="56" cy="57" r="2.5" fill="#ddb892"/><circle cx="80" cy="47" r="2" fill="#ddb892"/>
+</svg>

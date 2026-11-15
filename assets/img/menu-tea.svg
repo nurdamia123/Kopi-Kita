@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Tea"><title>Tea</title>
+<ellipse cx="60" cy="100" rx="40" ry="6" fill="#ddb892" opacity=".5"/>
+<path d="M28 52h56v16a28 28 0 0 1-28 28h0a28 28 0 0 1-28-28z" fill="#ffffff" stroke="#7a5235" stroke-width="3"/>
+<path d="M84 58h4a8 8 0 0 1 0 16h-6" fill="none" stroke="#7a5235" stroke-width="3" stroke-linecap="round"/>
+<path d="M60 52V30" stroke="#7a5235" stroke-width="2"/><rect x="53" y="18" width="14" height="14" rx="2" fill="#ddb892" stroke="#7a5235" stroke-width="2"/>
+<path d="M36 60c8 5 32 5 40 0" fill="none" stroke="#ddb892" stroke-width="3" stroke-linecap="round"/>
+</svg>

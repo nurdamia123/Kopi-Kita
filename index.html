@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Admin sign in for Kopi Kita, a cafe sales and management system.">
+  <meta name="keywords" content="Kopi Kita, cafe, ordering, sales, admin login">
+  <meta name="author" content="Nur Damia Izzati Binti Hassan (2025124987)">
+  <meta name="theme-color" content="#7a5235">
+  <meta name="robots" content="index, follow">
+  <!-- Open Graph: how the page looks when the link is shared -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Kopi Kita">
+  <meta property="og:title" content="Admin Login | Kopi Kita">
+  <meta property="og:description" content="Admin sign in for Kopi Kita, a cafe sales and management system.">
+  <title>Admin Login | Kopi Kita</title>
+  <link rel="icon" type="image/svg+xml" href="brand/app-icon.svg">
+  <link rel="apple-touch-icon" href="brand/app-icon.svg">
+  <!-- Apply the saved light/dark mode before the page draws (no white flash) -->
+  <script>try { document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('kk_theme') || 'light'); } catch (e) {}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body data-auth class="auth-page">
+  <!-- Light / dark mode switch -->
+  <button class="btn kk-top-btn kk-theme-btn kk-auth-theme" type="button" onclick="KK.toggleTheme()" aria-label="Switch light or dark mode" title="Light / dark mode"><i class="bi bi-moon-stars"></i></button>
+  <main class="auth-wrap">
+    <div class="kk-card auth-card">
+      <div class="row g-0">
+        <!-- Left: logo and short description (hidden on small phones) -->
+        <div class="col-md-6 auth-art d-none d-md-flex">
+          <img src="brand/kopikita_logo.svg" alt="Kopi Kita logo" class="mb-4">
+          <h2 class="h5">Kopi Kita Admin Panel</h2>
+          <ul class="list-unstyled small kk-muted mb-0">
+            <li class="mb-1"><i class="bi bi-check2 text-accent me-2"></i>Monitor sales and orders with interactive charts</li>
+            <li class="mb-1"><i class="bi bi-check2 text-accent me-2"></i>Manage the menu, stock, suppliers and staff roster</li>
+            <li><i class="bi bi-check2 text-accent me-2"></i>Analyse performance with detailed reports</li>
+          </ul>
+        </div>
+        <!-- Right: login form -->
+        <div class="col-md-6 auth-form">
+          <a class="d-block text-center mb-4 d-md-none" href="index.html"><img src="brand/kopikita_logo.svg" alt="Kopi Kita logo" style="height:120px;width:auto"></a>
+          <span class="kk-badge b-neutral d-inline-block mb-3"><i class="bi bi-shield-lock me-1"></i>Authorised admin only</span>
+          <h1 class="h4 mb-1">Admin sign in</h1>
+          <p class="kk-muted mb-4">Enter the admin username and password to continue.</p>
+
+          <div class="alert alert-danger small d-none" id="loginError" role="alert"></div>
+
+          <form id="loginForm" novalidate>
+            <div class="mb-3">
+              <label class="form-label" for="username">Username</label>
+              <div class="input-group"><span class="input-group-text"><i class="bi bi-person kk-muted"></i></span>
+                <input class="form-control" id="username" autocomplete="username" required>
+                <div class="invalid-feedback">Please enter your username.</div></div>
+            </div>
+            <div class="mb-2">
+              <label class="form-label" for="password">Password</label>
+              <div class="input-group"><span class="input-group-text"><i class="bi bi-lock kk-muted"></i></span>
+                <input type="password" class="form-control" id="password" autocomplete="current-password" required>
+                <button class="btn btn-light border" type="button" id="togglePw" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                <div class="invalid-feedback">Please enter your password.</div></div>
+              <div class="small text-warning mt-1 d-none" id="capsWarn"><i class="bi bi-exclamation-triangle me-1"></i>Caps Lock is on</div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="form-check"><input class="form-check-input" type="checkbox" id="remember"><label class="form-check-label small" for="remember">Remember me</label></div>
+              <a href="#" class="small" id="forgot">Forgot password?</a>
+            </div>
+            <button class="btn btn-primary w-100 py-2" type="submit" id="btnLogin">Sign in</button>
+          </form>
+          <p class="small kk-muted text-center mt-4 mb-0"><i class="bi bi-info-circle me-1"></i>For security, the account is locked for 30 seconds after 5 wrong passwords.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+  <!-- No footer on the login page: the footer appears only after signing in -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/pages/login.js"></script>
+</body>
+</html>

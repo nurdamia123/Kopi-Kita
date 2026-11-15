@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Dessert"><title>Dessert</title>
+<ellipse cx="60" cy="96" rx="44" ry="7" fill="#ddb892" opacity=".5"/>
+<path d="M18 70l78-30v46H18z" fill="#f8eed7" stroke="#7a5235" stroke-width="3" stroke-linejoin="round"/>
+<path d="M18 70l78-30v12L18 82z" fill="#7a5235" opacity=".85"/>
+<path d="M18 86h78" stroke="#7a5235" stroke-width="3"/>
+<circle cx="82" cy="34" r="7" fill="#b5534a"/><path d="M82 27q2-6 7-6" stroke="#5f8a66" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+</svg>
