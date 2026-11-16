@@ -21,7 +21,7 @@ KK.config = {
   course: 'CDIM262',
   subject: 'IMS566 Advanced Web Design Development and Content Management',
   university: 'UiTM Puncak Perdana',
-  github: 'https://github.com/your-username/kopikita'
+  github: 'https://github.com/nurdamia123/Kopi-Kita'
 };
 
 /* ---------- 2. Authentication (hardcoded, no database) ---------- */
@@ -246,8 +246,8 @@ KK.renderShell = function () {
         <div class="col-6 col-md-4">
           <div class="fw-600 kk-foot-title mb-2">Contact</div>
           <ul class="list-unstyled mb-0 d-grid gap-1">
-            <li><i class="bi bi-geo-alt me-1"></i>No. 8, Jalan Kenari 2/1, Seksyen 7, 40000 Shah Alam, Selangor</li>
-            <li><i class="bi bi-envelope me-1"></i><a href="mailto:hello@kopikita.my">hello@kopikita.my</a></li>
+            <li><i class="bi bi-geo-alt me-1"></i>G-12, Jalan Setia Prima, Setia Alam, 40170 Shah Alam, Selangor</li>
+            <li><i class="bi bi-envelope me-1"></i><a href="mailto:kopikita@gmail.com">kopikita@gmail.com</a></li>
             <li><i class="bi bi-clock me-1"></i>Daily, 7:00 am - 10:00 pm</li>
           </ul>
         </div>
