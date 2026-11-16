@@ -12,7 +12,11 @@ const DB = (() => {
   const load = (key, fallback) => {
     try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch (e) { return fallback; }
   };
-  const save = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+  const save = (key, value) => {
+    localStorage.setItem(key, JSON.stringify(value));
+    /* data changed (e.g. restock, new PO): refresh the notification bell */
+    if (window.KK && KK.renderNotifs) setTimeout(KK.renderNotifs, 0);
+  };
   const copy = obj => JSON.parse(JSON.stringify(obj));
 
   /* ======================================================
