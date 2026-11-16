@@ -21,7 +21,7 @@ KK.config = {
   course: 'CDIM262',
   subject: 'IMS566 Advanced Web Design Development and Content Management',
   university: 'UiTM Puncak Perdana',
-  github: 'https://github.com/your-username/kopikita'
+  github: 'https://github.com/nurdamia123/Kopi-Kita'
 };
 
 /* ---------- 2. Authentication (hardcoded, no database) ---------- */
