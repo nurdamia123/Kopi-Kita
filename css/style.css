@@ -259,6 +259,9 @@ img.thumb { object-fit: cover; border-radius: 6px; flex-shrink: 0; }
 .kk-sidebar .kk-nav .nav-link { color: #d9c8ba; }
 .kk-sidebar .kk-nav .nav-link:hover { background: var(--kk-choc-2); color: #fff; }
 .kk-sidebar .kk-nav .nav-link.active { background: var(--kk-cream); color: var(--kk-choc); }
+/* Hide the sidebar scrollbar (it still scrolls with mouse wheel / touch) */
+.kk-sidebar, .kk-sidebar * { scrollbar-width: none; -ms-overflow-style: none; }
+.kk-sidebar::-webkit-scrollbar, .kk-sidebar *::-webkit-scrollbar { display: none; width: 0; height: 0; }
 .kk-side-user { background: var(--kk-choc-2); }
 .kk-side-name { color: #fff; }
 .kk-side-role { color: #b59a85; }
@@ -446,3 +449,28 @@ th.sortable .bi { font-size: .7rem; margin-left: .2rem; }
   .kk-tabs, .kk-theme-btn, .no-print { display: none !important; }
   [data-bs-theme="dark"] body { background: #fff; color: #000; }
 }
+
+/* ======================================================
+   19. Notifications bell & full screen button
+   ====================================================== */
+.kk-notif-badge {
+  position: absolute; top: 2px; right: 2px; min-width: 17px; height: 17px; padding: 0 4px;
+  border-radius: 99px; background: #c0392b; color: #fff; font-size: 10px; font-weight: 700;
+  line-height: 17px; text-align: center; border: 2px solid var(--kk-surface, #fff);
+}
+.kk-notif-menu { width: 340px; max-width: calc(100vw - 24px); overflow: hidden; }
+.kk-notif-list { max-height: 360px; overflow-y: auto; scrollbar-width: none; }
+.kk-notif-list::-webkit-scrollbar { display: none; }
+.kk-notif-item {
+  display: flex; align-items: flex-start; gap: .65rem; padding: .7rem 1rem;
+  color: var(--kk-text); text-decoration: none; border-bottom: 1px solid var(--kk-border);
+}
+.kk-notif-item:last-child { border-bottom: 0; }
+.kk-notif-item:hover { background: var(--kk-bg); color: var(--kk-text); }
+.kk-notif-item.unread { background: var(--kk-accent-soft); }
+.kk-notif-icon { flex: 0 0 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; }
+.kk-notif-dot { flex: 0 0 8px; height: 8px; margin-top: 6px; border-radius: 50%; background: var(--kk-accent); }
+@media (max-width: 575.98px) {
+  .kk-notif-menu { position: fixed !important; left: 12px !important; right: 12px !important; top: 60px !important; transform: none !important; width: auto; }
+}
+.kk-notif-markall { color: var(--kk-accent) !important; font-weight: 600; }

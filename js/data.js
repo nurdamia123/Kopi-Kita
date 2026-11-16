@@ -6,7 +6,7 @@
    ========================================================== */
 
 /* The sample data below was made with 7 Nov 2026 as 'today' (DATA_BASE_DATE).
-   APP_TODAY is the real date on this computer. At the bottom of this file every
+    APP_TODAY is the real date on this computer. At the bottom of this file every
    date is moved forward so that the newest data always falls on today. */
 const DATA_BASE_DATE = '2026-11-07';
 const APP_TODAY = (() => {
@@ -601,7 +601,7 @@ const PURCHASE_ORDERS = [
 ];
 
 /* ---------- 9. Make the sample data follow the real date ----------
-   Every date is moved by the same number of days, so the newest orders are TODAY.
+Every date is moved by the same number of days, so the newest orders are TODAY.
    Example: on 20 Nov 2026 every date moves 13 days forward. */
 (function shiftDates() {
   const shift = Math.round((Date.parse(APP_TODAY) - Date.parse(DATA_BASE_DATE)) / 864e5);

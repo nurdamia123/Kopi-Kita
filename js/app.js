@@ -1,11 +1,11 @@
 /* ==========================================================
-    Kopi Kita - js/app.js
-    Purpose: Shared code used by EVERY page
-      1. Settings (student details shown in the footer)
-      2. Admin login / logout (hardcoded, one admin account)
-      3. Page guard (blocks pages if not logged in)
-      4. Shared sidebar navigation, top bar and footer
-      5. Popup (modal), toast, chart, table and format helpers
+   Kopi Kita - js/app.js
+   Purpose: Shared code used by EVERY page
+     1. Settings (student details shown in the footer)
+     2. Admin login / logout (hardcoded, one admin account)
+     3. Page guard (blocks pages if not logged in)
+     4. Shared sidebar navigation, top bar and footer
+     5. Popup (modal), toast, chart, table and format helpers
    ========================================================== */
 
 const KK = {};
@@ -197,6 +197,13 @@ KK.renderShell = function () {
         <a class="kk-brand d-lg-none" href="dashboard.html"><img src="brand/kopikita_mark.svg" alt="Kopi Kita logo"><span class="d-none d-sm-inline">Kopi Kita</span></a>
         <div class="ms-auto d-flex align-items-center gap-2">
           <span class="kk-date d-none d-md-inline-flex"><i class="bi bi-calendar3"></i>${today}</span>
+          <div class="dropdown">
+            <button class="btn kk-top-btn position-relative" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-label="Notifications" title="Notifications">
+              <i class="bi bi-bell"></i><span class="kk-notif-badge d-none" id="kkNotifBadge"></span></button>
+            <div class="dropdown-menu dropdown-menu-end kk-notif-menu p-0" id="kkNotifMenu"></div>
+          </div>
+          <button class="btn kk-top-btn kk-fs-btn ${KK.canFullscreen() ? '' : 'd-none'}" type="button" onclick="KK.toggleFullscreen()" aria-label="Full screen" title="Full screen">
+            <i class="bi ${document.fullscreenElement ? 'bi-fullscreen-exit' : 'bi-arrows-fullscreen'}"></i></button>
           <button class="btn kk-top-btn kk-theme-btn" type="button" onclick="KK.toggleTheme()" aria-label="Switch light or dark mode" title="Light / dark mode">
             <i class="bi ${KK.theme() === 'dark' ? 'bi-sun' : 'bi-moon-stars'}"></i></button>
           <div class="dropdown">
@@ -239,8 +246,8 @@ KK.renderShell = function () {
         <div class="col-6 col-md-4">
           <div class="fw-600 kk-foot-title mb-2">Contact</div>
           <ul class="list-unstyled mb-0 d-grid gap-1">
-            <li><i class="bi bi-geo-alt me-1"></i>G-12, Jalan Setia Prima, Setia Alam, 40170 Shah Alam, Selangor</li>
-            <li><i class="bi bi-envelope me-1"></i><a href="mailto:kopikita@gmail.com">kopikita@gmail.com</a></li>
+            <li><i class="bi bi-geo-alt me-1"></i>No. 8, Jalan Kenari 2/1, Seksyen 7, 40000 Shah Alam, Selangor</li>
+            <li><i class="bi bi-envelope me-1"></i><a href="mailto:hello@kopikita.my">hello@kopikita.my</a></li>
             <li><i class="bi bi-clock me-1"></i>Daily, 7:00 am - 10:00 pm</li>
           </ul>
         </div>
@@ -253,8 +260,112 @@ KK.renderShell = function () {
       </div>
     </footer>`;
   }
+  if (top && user) KK.renderNotifs();
   document.body.classList.add('ready');
 };
+
+/* ---------- 5b. Notifications (bell icon in the top bar) ---------- */
+/* Built live from the data, so they always match what is in the system.
+   Each notification has an id that includes today's date; ids the admin has
+   read are kept in localStorage (kk_notif_read) so the red badge goes away. */
+KK.notifications = function () {
+  const list = [];
+  const today = APP_TODAY;
+
+  /* 1. Ingredients below their reorder level */
+  const low = DB.inventory().filter(i => i.stock < i.reorder);
+  low.forEach(i => list.push({
+    id: `low-${i.id}-${today}`, icon: 'bi-exclamation-triangle', tone: 'danger',
+    title: `Low stock: ${i.name}`,
+    text: `Only ${i.stock} ${i.unit} left (reorder at ${i.reorder} ${i.unit}).`,
+    href: 'inventory.html'
+  }));
+
+  /* 2. Purchase orders that are late */
+  DB.purchaseOrders().filter(p => p.status === 'Pending' && p.expected < today).forEach(p => {
+    const late = Math.round((Date.parse(today) - Date.parse(p.expected)) / 864e5);
+    list.push({
+      id: `po-${p.id}-${today}`, icon: 'bi-truck', tone: 'warning',
+      title: `${p.id} is ${late} day${late > 1 ? 's' : ''} late`,
+      text: `From ${p.supplier}, expected ${KK.date(p.expected)}.`,
+      href: 'inventory.html'
+    });
+  });
+
+  /* 3. Today's sales so far */
+  const todays = DB.paidOrders().filter(o => o.date === today);
+  const sales = todays.reduce((s, o) => s + DB.orderTotal(o), 0);
+  list.push({
+    id: `today-${today}-${todays.length}`, icon: 'bi-receipt', tone: 'info',
+    title: `${todays.length} order${todays.length === 1 ? '' : 's'} today`,
+    text: todays.length ? `Sales so far: ${KK.rm(sales)}.` : 'No orders recorded yet today.',
+    href: 'orders.html'
+  });
+
+  /* 4. Progress towards this month's sales target */
+  const month = today.slice(0, 7);
+  const target = DB.targets()[month] || 0;
+  if (target) {
+    const done = DB.paidOrders().filter(o => o.date.slice(0, 7) === month).reduce((s, o) => s + DB.orderTotal(o), 0);
+    const pct = Math.round(done / target * 100);
+    list.push({
+      id: `target-${month}-${pct >= 100 ? 'hit' : Math.floor(pct / 25)}`,
+      icon: pct >= 100 ? 'bi-trophy' : 'bi-bullseye', tone: pct >= 100 ? 'success' : 'info',
+      title: pct >= 100 ? 'Monthly target reached!' : `${pct}% of monthly target`,
+      text: `${KK.rm(done)} of ${KK.rm(target)} for ${DB.monthName(month)}.`,
+      href: 'reports.html'
+    });
+  }
+  return list;
+};
+
+KK.notifRead = () => { try { return JSON.parse(localStorage.getItem('kk_notif_read')) || []; } catch (e) { return []; } };
+KK.setNotifRead = ids => { try { localStorage.setItem('kk_notif_read', JSON.stringify(ids.slice(-300))); } catch (e) { /* ignore */ } };
+
+KK.renderNotifs = function () {
+  const menu = document.getElementById('kkNotifMenu');
+  const badge = document.getElementById('kkNotifBadge');
+  if (!menu || !badge) return;
+  const list = KK.notifications();
+  const read = new Set(KK.notifRead());
+  const unread = list.filter(n => !read.has(n.id)).length;
+
+  badge.textContent = unread > 9 ? '9+' : unread;
+  badge.classList.toggle('d-none', unread === 0);
+
+  menu.innerHTML = `
+    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+      <span class="fw-600">Notifications</span>
+      ${unread ? `<button class="btn btn-link btn-sm p-0 text-decoration-none kk-notif-markall" onclick="KK.markAllNotifs()">Mark all as read</button>` : '<span class="small kk-muted">All caught up</span>'}
+    </div>
+    <div class="kk-notif-list">
+      ${list.map(n => `
+        <a class="kk-notif-item ${read.has(n.id) ? '' : 'unread'}" href="${n.href}" onclick="KK.readNotif('${n.id}')">
+          <span class="kk-notif-icon text-${n.tone} bg-${n.tone}-subtle"><i class="bi ${n.icon}"></i></span>
+          <span class="flex-grow-1 lh-sm"><span class="d-block fw-600 small">${KK.esc(n.title)}</span>
+            <span class="d-block small-2 kk-muted mt-1">${KK.esc(n.text)}</span></span>
+          ${read.has(n.id) ? '' : '<span class="kk-notif-dot" aria-label="Unread"></span>'}
+        </a>`).join('')}
+    </div>`;
+};
+KK.readNotif = id => { KK.setNotifRead([...new Set([...KK.notifRead(), id])]); };
+KK.markAllNotifs = () => { KK.setNotifRead([...new Set([...KK.notifRead(), ...KK.notifications().map(n => n.id)])]); KK.renderNotifs(); };
+
+/* ---------- 5c. Full screen ---------- */
+/* Uses the browser Fullscreen API. Press Esc (or the button again) to leave.
+   iPhones do not support full screen for web pages, so the button is hidden there. */
+KK.canFullscreen = () => !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+KK.toggleFullscreen = function () {
+  const el = document.documentElement;
+  const isFull = document.fullscreenElement || document.webkitFullscreenElement;
+  if (!isFull) (el.requestFullscreen || el.webkitRequestFullscreen).call(el)?.catch?.(() => KK.toast('Full screen is not allowed here.', 'danger'));
+  else (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+};
+['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => {
+  const on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  document.querySelectorAll('.kk-fs-btn i').forEach(i => { i.className = 'bi ' + (on ? 'bi-fullscreen-exit' : 'bi-arrows-fullscreen'); });
+  document.querySelectorAll('.kk-fs-btn').forEach(b => b.title = on ? 'Exit full screen' : 'Full screen');
+}));
 
 /* ---------- 6. Popup (modal) helper ---------- */
 /* KK.modal({ title, body, footer, size: 'sm'|'lg'|'xl', onShown(el) })
