@@ -80,7 +80,7 @@ const DB = (() => {
     const spend = paid.reduce((s, o) => s + orderTotal(o), 0);
     const fav = itemSales(paid)[0];
     const points = Math.floor(spend);            // 1 point for every RM1
-    const tier = spend >= 400 ? 'Gold' : spend >= 150 ? 'Silver' : 'Bronze';
+    const tier = spend >= 300 ? 'Gold' : spend >= 150 ? 'Silver' : 'Bronze';
     const last = list.map(o => o.date).sort().pop() || null;
     return { orders: list, visits: paid.length, spend, points, tier, lastVisit: last, favourite: fav ? fav.item.name : '-' };
   }
