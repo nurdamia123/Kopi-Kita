@@ -39,7 +39,7 @@ const ADMIN_ACCOUNT = {
 KK.admin = () => ({ ...ADMIN_ACCOUNT, ...DB.load('kk_admin_edits', {}) });
 KK.findUser = username => {
   const a = KK.admin();
-  return a.username.toLowerCase() === String(username).trim().toLowerCase() ? a : null;
+  return a.username === String(username).trim() ? a : null;   // case-sensitive: must be exactly "Damia"
 };
 KK.updateUser = function (username, changes) {
   DB.save('kk_admin_edits', { ...DB.load('kk_admin_edits', {}), ...changes });
