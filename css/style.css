@@ -474,3 +474,15 @@ th.sortable .bi { font-size: .7rem; margin-left: .2rem; }
   .kk-notif-menu { position: fixed !important; left: 12px !important; right: 12px !important; top: 60px !important; transform: none !important; width: auto; }
 }
 .kk-notif-markall { color: var(--kk-accent) !important; font-weight: 600; }
+/* Notification history ("View all" in the bell menu) */
+.kk-notif-all {
+  display: block; width: 100%; padding: .6rem 1rem; border: 0; border-top: 1px solid var(--kk-border);
+  background: transparent; color: var(--kk-accent); font-size: .85rem; font-weight: 600; text-align: center;
+}
+.kk-notif-all:hover { background: var(--kk-bg); }
+.kk-notif-history { overflow: hidden; }
+.kk-notif-history .kk-notif-item:last-child { border-bottom: 0; }
+.kk-notif-day {
+  padding: .45rem 1rem; background: var(--kk-bg); border-bottom: 1px solid var(--kk-border);
+  font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--kk-muted, #8a7d72);
+}

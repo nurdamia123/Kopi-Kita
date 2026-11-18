@@ -346,10 +346,128 @@ KK.renderNotifs = function () {
             <span class="d-block small-2 kk-muted mt-1">${KK.esc(n.text)}</span></span>
           ${read.has(n.id) ? '' : '<span class="kk-notif-dot" aria-label="Unread"></span>'}
         </a>`).join('')}
-    </div>`;
+    </div>
+    <button type="button" class="kk-notif-all" onclick="KK.showNotifHistory()">
+      <i class="bi bi-clock-history me-1"></i>View all notifications (last 7 days)</button>`;
 };
 KK.readNotif = id => { KK.setNotifRead([...new Set([...KK.notifRead(), id])]); };
 KK.markAllNotifs = () => { KK.setNotifRead([...new Set([...KK.notifRead(), ...KK.notifications().map(n => n.id)])]); KK.renderNotifs(); };
+
+/* ---------- 5b-ii. Notification history (past 7 days) ---------- */
+/* Rebuilds what happened on each of the last 7 days from the data:
+   daily sales summary, stock movements, purchase orders and the day the
+   monthly sales target was reached. Shown in a popup from the bell menu. */
+KK.notifHistory = function (days = 7) {
+  const from = DB.daysAgo(days - 1), to = APP_TODAY;
+  const inRange = d => d && d >= from && d <= to;
+  const invName = id => (DB.inventory().find(i => i.id === id) || {}).name;
+  const events = [];
+
+  /* 1. Daily sales summary (+ best seller of the day) */
+  for (let i = 0; i < days; i++) {
+    const d = DB.daysAgo(i);
+    const all = DB.orders().filter(o => o.date === d);
+    if (!all.length) continue;
+    const paid = DB.paidOrders(all);
+    const sales = paid.reduce((s, o) => s + DB.orderTotal(o), 0);
+    const qty = {};
+    paid.forEach(o => o.items.forEach(([id, q]) => { qty[id] = (qty[id] || 0) + q; }));
+    const best = Object.entries(qty).sort((a, b) => b[1] - a[1])[0];
+    const cancelled = all.length - paid.length;
+    events.push({
+      date: d, kind: 'sales', icon: 'bi-receipt', tone: 'info',
+      title: `${paid.length} order${paid.length === 1 ? '' : 's'} · ${KK.rm(sales)}`,
+      text: (best ? `Best seller: ${(DB.menuById(best[0]) || {}).name || best[0]} (${best[1]} sold)` : 'No paid orders')
+        + (cancelled ? ` · ${cancelled} cancelled` : ''),
+      href: 'orders.html'
+    });
+  }
+
+  /* 2. Stock movements from the stock history log */
+  const STOCK_LOOK = {
+    'Restock':    ['bi-box-arrow-in-down', 'success', e => `Restocked ${invName(e.item) || e.itemName || e.item}`, e => `+${e.qty} · ${e.note || 'Restock'}`],
+    'Adjustment': ['bi-sliders', 'warning', e => `Stock adjusted: ${invName(e.item) || e.itemName || e.item}`, e => `${e.qty} · ${e.note || 'Adjustment'}`],
+    'New item':   ['bi-plus-circle', 'success', e => `New stock item: ${e.itemName || invName(e.item)}`, e => e.note || 'Added to inventory'],
+    'Deleted':    ['bi-trash', 'danger', e => `Stock item removed: ${e.itemName || e.item}`, e => e.note || 'Removed from inventory']
+  };
+  DB.stockLog().filter(e => inRange(e.date) && STOCK_LOOK[e.type]).forEach(e => {
+    const [icon, tone, title, text] = STOCK_LOOK[e.type];
+    events.push({ date: e.date, kind: 'stock', icon, tone, title: title(e), text: `${text(e)} · by ${e.by || 'Admin'}`, href: 'inventory.html' });
+  });
+
+  /* 3. Purchase orders: created, received, overdue */
+  DB.purchaseOrders().forEach(p => {
+    const total = KK.rm(DB.poTotal(p));
+    if (inRange(p.date)) events.push({ date: p.date, kind: 'po', icon: 'bi-cart-plus', tone: 'info',
+      title: `${p.id} created`, text: `${p.supplier} · ${total}`, href: 'inventory.html' });
+    const got = p.received || (p.status === 'Received' ? p.expected : null);
+    if (inRange(got)) events.push({ date: got, kind: 'po', icon: 'bi-truck', tone: 'success',
+      title: `${p.id} received`, text: `${p.supplier} · ${total}`, href: 'inventory.html' });
+    if (p.status === 'Pending' && inRange(DB.addDays(p.expected, 1))) events.push({ date: DB.addDays(p.expected, 1), kind: 'po',
+      icon: 'bi-exclamation-circle', tone: 'warning', title: `${p.id} is late`,
+      text: `${p.supplier} was expected on ${KK.date(p.expected)}`, href: 'inventory.html' });
+  });
+
+  /* 4. The day this month's sales target was reached */
+  const month = APP_TODAY.slice(0, 7), target = DB.targets()[month] || 0;
+  if (target) {
+    let run = 0;
+    const byDay = {};
+    DB.paidOrders().filter(o => o.date.slice(0, 7) === month).forEach(o => { byDay[o.date] = (byDay[o.date] || 0) + DB.orderTotal(o); });
+    const hit = Object.keys(byDay).sort().find(d => (run += byDay[d]) >= target);
+    if (inRange(hit)) events.push({ date: hit, kind: 'sales', icon: 'bi-trophy', tone: 'success',
+      title: 'Monthly target reached!', text: `Passed ${KK.rm(target)} for ${DB.monthName(month)}`, href: 'reports.html' });
+  }
+
+  const order = { sales: 0, po: 1, stock: 2 };
+  return events.sort((a, b) => b.date.localeCompare(a.date) || order[a.kind] - order[b.kind]);
+};
+
+KK.showNotifHistory = function () {
+  /* close the bell dropdown first */
+  document.querySelectorAll('.kk-notif-menu.show').forEach(m => bootstrap.Dropdown.getOrCreateInstance(m.previousElementSibling).hide());
+  const events = KK.notifHistory(7);
+  const count = k => events.filter(e => k === 'all' || e.kind === k).length;
+  const dayLabel = d => d === APP_TODAY ? 'Today' : d === DB.daysAgo(1) ? 'Yesterday' : KK.date(d);
+
+  const render = (box, kind) => {
+    const list = events.filter(e => kind === 'all' || e.kind === kind);
+    if (!list.length) { box.innerHTML = '<div class="text-center kk-muted py-5"><i class="bi bi-bell-slash fs-2 d-block mb-2"></i>Nothing here for the last 7 days.</div>'; return; }
+    let last = '';
+    box.innerHTML = list.map(e => {
+      const head = e.date !== last ? `<div class="kk-notif-day">${dayLabel(e.date)}</div>` : '';
+      last = e.date;
+      return head + `
+        <a class="kk-notif-item" href="${e.href}">
+          <span class="kk-notif-icon text-${e.tone} bg-${e.tone}-subtle"><i class="bi ${e.icon}"></i></span>
+          <span class="flex-grow-1 lh-sm"><span class="d-block fw-600 small">${KK.esc(e.title)}</span>
+            <span class="d-block small-2 kk-muted mt-1">${KK.esc(e.text)}</span></span>
+          <i class="bi bi-chevron-right kk-muted small mt-1"></i>
+        </a>`;
+    }).join('');
+  };
+
+  const tabs = [['all', 'All'], ['sales', 'Sales'], ['stock', 'Stock'], ['po', 'Purchase orders']];
+  KK.modal({
+    title: '<i class="bi bi-clock-history me-2"></i>Notification history',
+    size: 'lg',
+    body: `
+      <p class="small kk-muted mb-3">Everything that happened from <b>${KK.date(DB.daysAgo(6))}</b> to <b>${KK.date(APP_TODAY)}</b> (last 7 days).</p>
+      <div class="d-flex flex-wrap gap-2 mb-3" id="nhTabs">
+        ${tabs.map(([k, label], i) => `<button type="button" class="btn btn-sm ${i ? 'btn-outline-secondary' : 'btn-primary'}" data-kind="${k}">${label} <span class="badge text-bg-light ms-1">${count(k)}</span></button>`).join('')}
+      </div>
+      <div class="kk-notif-history border rounded-3" id="nhList"></div>`,
+    onShown: wrap => {
+      const box = wrap.querySelector('#nhList');
+      render(box, 'all');
+      wrap.querySelectorAll('#nhTabs button').forEach(b => b.addEventListener('click', () => {
+        wrap.querySelectorAll('#nhTabs button').forEach(x => x.className = 'btn btn-sm btn-outline-secondary');
+        b.className = 'btn btn-sm btn-primary';
+        render(box, b.dataset.kind);
+      }));
+    }
+  });
+};
 
 /* ---------- 5c. Full screen ---------- */
 /* Uses the browser Fullscreen API. Press Esc (or the button again) to leave.
