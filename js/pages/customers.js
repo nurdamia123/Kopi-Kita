@@ -14,7 +14,7 @@
   const totalSpend = list.reduce((s, x) => s + x.spend, 0);
   const cards = [
     ['Members', list.length, 'bi-people', `${list.filter(x => DB.monthKey(x.c.joined) === prevMonth).length} joined last month`],
-    ['Gold members', list.filter(x => x.tier === 'Gold').length, 'bi-award', 'Spent RM400 or more'],
+    ['Gold members', list.filter(x => x.tier === 'Gold').length, 'bi-award', 'Spent RM300 or more'],
     ['Avg spend / member', KK.rm(totalSpend / list.length), 'bi-wallet2', 'Since joining'],
     ['Points issued', KK.num(list.reduce((s, x) => s + x.points, 0)), 'bi-star', '1 point = RM1']
   ];
@@ -30,16 +30,29 @@
       title: 'Membership summary',
       body: `<div class="table-responsive"><table class="table kk-table"><thead><tr><th>Tier</th><th class="text-end">Members</th><th class="text-end">Total spend</th><th class="text-end">Avg visits</th><th class="text-end">Points</th></tr></thead><tbody>
         ${tiers.map(t => { const l = list.filter(x => x.tier === t); return `<tr><td>${KK.badge(t)}</td><td class="text-end">${l.length}</td><td class="text-end">${KK.rm0(l.reduce((s, x) => s + x.spend, 0))}</td><td class="text-end">${l.length ? (l.reduce((s, x) => s + x.visits, 0) / l.length).toFixed(1) : 0}</td><td class="text-end">${KK.num(l.reduce((s, x) => s + x.points, 0))}</td></tr>`; }).join('')}
-        </tbody></table></div><p class="small kk-muted mb-0">Tier rules: Bronze &lt; RM150, Silver RM150 - RM399, Gold RM400 and above.</p>`
+        </tbody></table></div><p class="small kk-muted mb-0">Tier rules: Bronze &lt; RM150, Silver RM150 - RM299, Gold RM300 and above.</p>`
     });
   });
 
   /* ---------- Charts ---------- */
+  /* Chart click -> set the filter, redraw the table, then scroll down to it so the change is visible */
+  const pointer = (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; };
+  function filterTo(field, value, label) {
+    if (field === 'cTier') $('cSearch').value = ''; else $('cTier').value = '';
+    $(field).value = value;
+    draw();
+    $('cTier').closest('.kk-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    KK.toast(`Showing ${filtered().length} ${label}`, 'info');
+  }
   const tiers = ['Gold', 'Silver', 'Bronze'];
   KK.chart('tierChart', {
     type: 'doughnut',
     data: { labels: tiers, datasets: [{ data: tiers.map(t => list.filter(x => x.tier === t).length), backgroundColor: ['#c08a33', '#b8b2ac', '#b08968'], borderColor: '#fff', borderWidth: 2 }] },
-    options: { cutout: '60%', plugins: { legend: { position: 'bottom' } }, onClick: (e, els) => { if (els.length) { $('cTier').value = tiers[els[0].index]; draw(); } } }
+    options: { cutout: '60%',
+      /* click a slice OR a legend label (Gold / Silver / Bronze) to filter the table */
+      plugins: { legend: { position: 'bottom', onClick: (e, item) => filterTo('cTier', tiers[item.index], `${tiers[item.index]} members`) } },
+      onHover: pointer,
+      onClick: (e, els) => { if (els.length) filterTo('cTier', tiers[els[0].index], `${tiers[els[0].index]} members`); } }
   });
   const months = [...new Set(CUSTOMERS.map(c => DB.monthKey(c.joined)))].sort();
   KK.chart('joinChart', {
@@ -53,7 +66,8 @@
     type: 'bar',
     data: { labels: areaKeys, datasets: [{ label: 'Members', data: areaKeys.map(a => areas[a]), backgroundColor: KK.colors[2], borderRadius: 6 }] },
     options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { y: KK.noGrid, x: { ticks: { precision: 0 } } },
-      onClick: (e, els) => { if (els.length) { $('cSearch').value = areaKeys[els[0].index]; draw(); } } }
+      onHover: pointer,
+      onClick: (e, els) => { if (els.length) filterTo('cSearch', areaKeys[els[0].index], `members in ${areaKeys[els[0].index]}`); } }
   });
   const top10 = [...list].sort((a, b) => b.spend - a.spend).slice(0, 10);
   KK.chart('topChart', {
